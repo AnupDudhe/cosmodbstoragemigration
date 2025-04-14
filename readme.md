@@ -216,3 +216,18 @@ Azure Blob Storage
 Object storage solution for the cloud.​
 Used to archive data from Cosmos DB.​
 Supports different access tiers: Hot, Cool, and Archive.
+
+Azure Functions
+Serverless compute service to run event-driven code.
+Implements:​
+Scheduled Function: Periodically moves data older than a specified duration from Cosmos DB to Blob Storage.
+HTTP Triggered Function: Restores archived data from Blob Storage back to Cosmos DB upon client request.
+
+### Workflow Overview
+Data Archiving
+A scheduled Azure Function queries Cosmos DB for records older than a specified duration (e.g., 3 months).​
+These records are serialized and stored in Azure Blob Storage under the Cool or Archive tier, depending on access requirements.​
+
+Data Restoration
+Upon client request, an HTTP-triggered Azure Function retrieves the specified blob from Azure Blob Storage.​
+The function deserializes the data and inserts it back into Cosmos DB, making it immediately accessible to the client.
