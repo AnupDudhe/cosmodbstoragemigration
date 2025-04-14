@@ -1,3 +1,36 @@
+
+```
+az login  #enter your azure credentials ensure you have azure cli installed on your shell.
+```
+
+```
+az group create \
+  --name insertyourresourcegroupname \
+  --location eastus
+```
+
+```
+az storage account create \
+  --name mystorageaccount \
+  --resource-group MyResourceGroup \
+  --location eastus \
+  --sku Standard_LRS \
+  --kind StorageV2 \
+  --access-tier Cool
+```
+
+```
+az storage container create \
+  --name mycontainer \
+  --account-name mystorageaccount \
+  --auth-mode login
+```
+
+
+
+
+
+
 ### Set Up Azure Function
 ### Connect to Cosmos DB: Use the Cosmos DB SDK to connect to your database.​
 
