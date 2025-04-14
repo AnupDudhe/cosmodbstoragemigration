@@ -204,3 +204,15 @@ public class RestoreArchivedData
 }
 ```
 now these two functions will ensure your timely older record is stored in blob in schedula based and your cosmos storage is reduced and the other function will ensure that whenever client requets older data of cosmosdb
+
+
+### Core Azure Services required 
+Azure Cosmos DB 
+A globally distributed, multi-model NoSQL database service.​
+Stores your primary, operational data.​
+Supports triggers and change feed for real-time data processing
+
+Azure Blob Storage
+Object storage solution for the cloud.​
+Used to archive data from Cosmos DB.​
+Supports different access tiers: Hot, Cool, and Archive.
