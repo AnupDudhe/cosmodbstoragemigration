@@ -1,14 +1,14 @@
-
+### login your azure credentials
 ```
 az login  #enter your azure credentials ensure you have azure cli installed on your shell.
 ```
-
+### creation of resourcegroupifrequired
 ```
 az group create \
   --name insertyourresourcegroupname \
   --location eastus
 ```
-
+### Create a Storage Account with Cool Access Tier
 ```
 az storage account create \
   --name mystorageaccount \
@@ -18,7 +18,7 @@ az storage account create \
   --kind StorageV2 \
   --access-tier Cool
 ```
-
+### Create a Blob Container (Optional)
 ```
 az storage container create \
   --name mycontainer \
@@ -31,12 +31,18 @@ az storage container create \
 
 
 
-### Set Up Azure Function
+### Set Up Azure Function & Create a Timer-Triggered Azure Function:
 ### Connect to Cosmos DB: Use the Cosmos DB SDK to connect to your database.​
 
 ### Query Data: Retrieve documents where the createdAt field is older than three months.​
 
 ### Store in Blob Storage: Serialize the retrieved documents into a file (e.g., JSON) and upload it to Azure Blob Storage.
+
+### Select the Timer Trigger template.​
+### Define the schedule using a CRON expression. For daily execution at midnight:
+```
+ "schedule": "0 0 0 * * *"
+```
 
 ```
 import datetime
