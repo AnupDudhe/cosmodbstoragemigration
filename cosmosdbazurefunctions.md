@@ -140,7 +140,7 @@ def main(mytimer: func.TimerRequest) -> None:
     logging.info(f"Archived {len(old_records)} records to blob '{blob_name}' in container '{blob_container_name}'.")
 ```
 
-```
+
 ### Fetch archived data from Azure Blob Storage when requested by a client. 
 ### this configuration can be really crucial in retrieving 3months older data when client requests and giving the data access in few seconds
 ### This function retrieves archived data from Azure Blob Storage based on the provided date. (in C#)
@@ -251,6 +251,7 @@ public class RestoreArchivedData
         return response;
     }
 }
+```
 ### This function retrieves archived data from Azure Blob Storage based on the provided date. (in Python)
 ```
 import logging
@@ -309,12 +310,32 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse("Data restored successfully.", status_code=200)
 ```
 
-```
+
 ### To invoke this function, send an HTTP POST request to the function's endpoint with a JSON body specifying the blob name:
 ```
 {
   "blobName": "archive-2025-01-01.json"
 }
+
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"],
+      "route": "restore"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    }
+  ]
+}
+
 ```
 now these two functions will ensure your timely older record is stored in blob in schedula based and your cosmos storage is reduced and the other function will ensure that whenever client requets older data of cosmosdb
 
