@@ -83,7 +83,9 @@ public class ArchiveOldData
 }
 # Replace the TODO sections with your logic to connect to Cosmos DB, retrieve old records, serialize them, and upload to Blob Storage.​
 #Ensure that the Blob Storage connection string and container name are correctly specified.
-###  This function runs daily at midnight to archive data older than three months. (IN Python)
+
+```
+### This function runs daily at midnight to archive data older than three months. (IN Python)
 ```
 import datetime
 import logging
