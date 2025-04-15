@@ -43,7 +43,7 @@ az storage container create \
 ```
  "schedule": "0 0 0 * * *"
 ```
-###  This function runs daily at midnight to archive data older than three months.
+###  This function runs daily at midnight to archive data older than three months. (IN C#)
 ```
 using System;
 using System.IO;
@@ -83,6 +83,60 @@ public class ArchiveOldData
 }
 # Replace the TODO sections with your logic to connect to Cosmos DB, retrieve old records, serialize them, and upload to Blob Storage.​
 #Ensure that the Blob Storage connection string and container name are correctly specified.
+###  This function runs daily at midnight to archive data older than three months. (IN Python)
+```
+import datetime
+import logging
+import os
+import json
+from azure.storage.blob import BlobServiceClient
+from azure.cosmos import CosmosClient
+import azure.functions as func
+
+def main(mytimer: func.TimerRequest) -> None:
+    utc_timestamp = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    logging.info(f'Python timer trigger function ran at {utc_timestamp}')
+
+    # Retrieve environment variables
+    cosmos_endpoint = os.environ['COSMOS_ENDPOINT']
+    cosmos_key = os.environ['COSMOS_KEY']
+    cosmos_database = os.environ['COSMOS_DATABASE']
+    cosmos_container = os.environ['COSMOS_CONTAINER']
+    blob_connection_string = os.environ['AZURE_STORAGE_CONNECTION_STRING']
+    blob_container_name = os.environ['BLOB_CONTAINER_NAME']
+
+    # Initialize Cosmos DB client
+    cosmos_client = CosmosClient(cosmos_endpoint, cosmos_key)
+    database = cosmos_client.get_database_client(cosmos_database)
+    container = database.get_container_client(cosmos_container)
+
+    # Calculate the cutoff date (e.g., 3 months ago)
+    cutoff_date = datetime.datetime.utcnow() - datetime.timedelta(days=90)
+
+    # Query for records older than the cutoff date
+    query = f"SELECT * FROM c WHERE c.timestamp < '{cutoff_date.isoformat()}'"
+    old_records = list(container.query_items(query=query, enable_cross_partition_query=True))
+
+    if not old_records:
+        logging.info("No old records found for archiving.")
+        return
+
+    # Serialize records to JSON
+    json_data = json.dumps(old_records, default=str)
+
+    # Initialize Blob Storage client
+    blob_service_client = BlobServiceClient.from_connection_string(blob_connection_string)
+    blob_container_client = blob_service_client.get_container_client(blob_container_name)
+
+    # Create a unique blob name
+    blob_name = f"archive-{datetime.datetime.utcnow().strftime('%Y-%m-%d')}.json"
+
+    # Upload JSON data to Blob Storage
+    blob_client = blob_container_client.get_blob_client(blob_name)
+    blob_client.upload_blob(json_data, overwrite=True)
+
+    logging.info(f"Archived {len(old_records)} records to blob '{blob_name}' in container '{blob_container_name}'.")
+```
 
 ```
 ### Fetch archived data from Azure Blob Storage when requested by a client. 
