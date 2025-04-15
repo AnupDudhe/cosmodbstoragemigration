@@ -141,8 +141,9 @@ def main(mytimer: func.TimerRequest) -> None:
 ```
 ### Fetch archived data from Azure Blob Storage when requested by a client. 
 ### this configuration can be really crucial in retrieving 3months older data when client requests and giving the data access in few seconds
+### This function retrieves archived data from Azure Blob Storage based on the provided date. (in C#)
 ```
-#This function retrieves archived data from Azure Blob Storage based on the provided date.
+#This function retrieves archived data from Azure Blob Storage based on the provided date. (in C#)
 
 using System;
 using System.Collections.Generic;
@@ -248,7 +249,63 @@ public class RestoreArchivedData
         return response;
     }
 }
+### This function retrieves archived data from Azure Blob Storage based on the provided date. (in Python)
+```
+import logging
+import os
+import json
+from azure.storage.blob import BlobServiceClient
+from azure.cosmos import CosmosClient, exceptions
+import azure.functions as func
 
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Processing request to restore archived data.")
+
+    try:
+        req_body = req.get_json()
+    except ValueError:
+        return func.HttpResponse("Invalid JSON in request body.", status_code=400)
+
+    blob_name = req_body.get("blobName")
+    if not blob_name:
+        return func.HttpResponse("Blob name is required.", status_code=400)
+
+    # Access the blob
+    blob_connection_string = os.getenv("AzureWebJobsStorage")
+    blob_service_client = BlobServiceClient.from_connection_string(blob_connection_string)
+    container_client = blob_service_client.get_container_client("archived-data")
+    blob_client = container_client.get_blob_client(blob_name)
+
+    try:
+        download_stream = blob_client.download_blob()
+        json_data = download_stream.readall()
+    except Exception as e:
+        logging.error(f"Error accessing blob: {e}")
+        return func.HttpResponse("Blob not found or inaccessible.", status_code=404)
+
+    try:
+        records = json.loads(json_data)
+    except json.JSONDecodeError as e:
+        logging.error(f"JSON deserialization error: {e}")
+        return func.HttpResponse("Invalid JSON format in blob.", status_code=400)
+
+    # Insert records into Cosmos DB
+    cosmos_connection_string = os.getenv("CosmosDbConnectionString")
+    database_name = os.getenv("CosmosDbDatabaseName")
+    container_name = os.getenv("CosmosDbContainerName")
+
+    cosmos_client = CosmosClient.from_connection_string(cosmos_connection_string)
+    container = cosmos_client.get_database_client(database_name).get_container_client(container_name)
+
+    for record in records:
+        try:
+            container.upsert_item(record)
+        except exceptions.CosmosHttpResponseError as e:
+            logging.error(f"Error inserting record: {e}")
+            # Optionally handle individual record failures
+
+    return func.HttpResponse("Data restored successfully.", status_code=200)
+```
 
 ```
 ### To invoke this function, send an HTTP POST request to the function's endpoint with a JSON body specifying the blob name:
